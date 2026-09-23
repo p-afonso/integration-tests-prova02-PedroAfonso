@@ -1,40 +1,44 @@
-name: Node.js CI
+name: Booking API CI
 
 on:
   push:
     branches: [master]
   pull_request:
     branches: [master]
-  schedule:
-    - cron: '0 12 * * *'
+  workflow_dispatch:
 
 jobs:
-  build:
-    name: Run Integration Tests
+  tests:
+    name: Integration tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7.0.0
-      - name: Use Node.js 21
-        uses: actions/setup-node@v7.0.0
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: 22
-          cache: 'npm'
-      - run: npm install
-      - run: npm test
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run test:booking
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: booking-test-report
+          path: output/report.html
+          if-no-files-found: ignore
 
   sonarcloud:
-    name: Run SonarCloud
+    name: SonarCloud analysis
+    needs: tests
+    if: github.event_name != 'pull_request' && vars.SONAR_PROJECT_KEY != '' && vars.SONAR_ORGANIZATION != ''
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7.0.0
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v7.0.0
-        with:
-          node-version: 22
-      - name: SonarCloud Scan
-        uses: SonarSource/sonarqube-scan-action@v8.2.1
+      - uses: SonarSource/sonarqube-scan-action@v8.2.1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >-
+            -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY }}
+            -Dsonar.organization=${{ vars.SONAR_ORGANIZATION }}
