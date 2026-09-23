@@ -29,7 +29,7 @@ jobs:
   sonarcloud:
     name: SonarCloud analysis
     needs: tests
-    if: github.event_name != 'pull_request' && vars.SONAR_PROJECT_KEY != '' && vars.SONAR_ORGANIZATION != ''
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -38,7 +38,3 @@ jobs:
       - uses: SonarSource/sonarqube-scan-action@v8.2.1
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          args: >-
-            -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY }}
-            -Dsonar.organization=${{ vars.SONAR_ORGANIZATION }}
