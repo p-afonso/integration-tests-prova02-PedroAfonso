@@ -2,6 +2,7 @@ import pactum from 'pactum';
 
 const baseUrl = 'https://restful-booker.herokuapp.com';
 pactum.request.setDefaultTimeout(45000);
+pactum.request.setDefaultHeaders('Accept', 'application/json');
 
 describe('Restful-Booker: ciclo de uma reserva', () => {
   it('cria, consulta, atualiza e confirma uma reserva', async () => {
